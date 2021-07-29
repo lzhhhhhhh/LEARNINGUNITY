@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+//MARKER THIS IS THE ENEMY PROJECTILE 
 public class Projectile : MonoBehaviour
 {
     private Transform target;
@@ -9,8 +10,8 @@ public class Projectile : MonoBehaviour
 
     public GameObject destroyEffect, attackEffect;
 
-    private float lifeTimer;
-    [SerializeField] private float maxLife = 2.0f;
+    private float lifeTimer;//How long the projectile auto destroy
+    [SerializeField] private float maxLife = 2.0f;//After two seconds, the projectile auto destroy
 
     private void Start()
     {
@@ -34,6 +35,7 @@ public class Projectile : MonoBehaviour
         if(other.gameObject.tag == "Player")
         {
             other.GetComponentInChildren<HealthBar>().hp -= 35;
+
             Instantiate(attackEffect, transform.position, Quaternion.identity);
             Destroy(gameObject);
         }

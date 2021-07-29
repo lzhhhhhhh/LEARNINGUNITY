@@ -5,8 +5,8 @@ using UnityEngine.UI;
 
 public class HealthBar : MonoBehaviour
 {
-    public Image hpImage;
-    public Image hpEffectImage;
+    public Image hpImage;//"Red" Health bar Image
+    public Image hpEffectImage;//"White Effect" Health bar Image
 
     [HideInInspector] public float hp;
     [SerializeField] private float maxHp;
@@ -14,7 +14,7 @@ public class HealthBar : MonoBehaviour
 
     private void Start()
     {
-        hp = maxHp;
+        hp = maxHp;//At the beginning of the game, The hp is the maxHp
     }
 
     private void Update()

@@ -9,38 +9,57 @@ public class Enemy : MonoBehaviour
     [SerializeField] private float moveSpeed;
 
     [SerializeField] private float attackRange;
-    //private SpriteRenderer sp;//MARKER replace with localScale later
 
-    private Animator anim;
+    private Animator anim;//WALK & ATTACK Animation
     public GameObject projectile;
     public Transform firePoint;
     private Transform target;
 
+    //Hurt Effect
+    private SpriteRenderer sp;
+    private Material defaultMat;
+    [SerializeField] private Material hurtMat;
+
+    //Death Effect
+    //private bool isDead;
+    [SerializeField] private GameObject fireExplosion;
+    public Transform fireExplosionTrans;
+
+    public GameObject key;
+
     private void Start()
     {
-        wayPointTarget = wayPoint01;
-        //sp = GetComponent<SpriteRenderer>();
+        wayPointTarget = wayPoint01;//original Target is wayPoint01
+        sp = GetComponent<SpriteRenderer>();
 
         anim = GetComponent<Animator>();
         target = GameObject.FindGameObjectWithTag("Player").GetComponent<Transform>();
+        defaultMat = GetComponent<SpriteRenderer>().material;
     }
 
     private void Update()
     {
-        if(Vector2.Distance(transform.position, target.position) >= attackRange)
+        if (GetComponentInChildren<HealthBar>().hp <= 0)
+        {
+            //isDead = true;
+            anim.SetBool("isDied", true);
+            GetComponent<CircleCollider2D>().enabled = false;
+
+            Instantiate(fireExplosion, fireExplosionTrans.position, Quaternion.identity);
+
+            EventSystem.instance.CameraShakeEvent(0.2f);//MARKER OB PATTERN
+            return;
+        }
+
+        if (Vector2.Distance(transform.position, target.position) >= attackRange)
         {
             anim.SetBool("isAttack", false);
+
             Patrol();
         }
         else
         {
             anim.SetBool("isAttack", true);
-        }
-
-        //MARKER ONLY FOR TEST
-        if(Input.GetKeyDown(KeyCode.Space))
-        {
-            GetComponentInChildren<HealthBar>().hp -= 70;
         }
     }
 
@@ -53,9 +72,7 @@ public class Enemy : MonoBehaviour
             wayPointTarget = wayPoint02;
 
             //sp.flipX = false
-            Vector3 localTemp = transform.localScale;
-            localTemp.x *= -1;
-            transform.localScale = localTemp;
+            TurnAround();
         }
 
         if (Vector2.Distance(transform.position, wayPoint02.position) < 0.01f)
@@ -63,9 +80,7 @@ public class Enemy : MonoBehaviour
             wayPointTarget = wayPoint01;
 
             //sp.flipX = true
-            Vector3 localTemp = transform.localScale;
-            localTemp.x *= -1;
-            transform.localScale = localTemp;
+            TurnAround();
         }
     }
 
@@ -73,6 +88,35 @@ public class Enemy : MonoBehaviour
     public void Shot()
     {
         Instantiate(projectile, firePoint.position, Quaternion.identity);
+    }
+
+    private void TurnAround()
+    {
+        Vector3 localTemp = transform.localScale;
+        localTemp.x *= -1;
+        transform.localScale = localTemp;
+    }
+
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        if(other.tag == "Weapon")
+        {
+            StartCoroutine(HurtEffect());
+        }
+    }
+
+    IEnumerator HurtEffect()
+    {
+        sp.material = hurtMat;
+        yield return new WaitForSeconds(0.2f);
+        sp.material = defaultMat;
+    }
+
+    //MARKER ATTACH to the last frame on the Death Animation
+    public void Destroy()
+    {
+        Destroy(gameObject);
+        Instantiate(key, transform.position, Quaternion.identity);
     }
 
 
